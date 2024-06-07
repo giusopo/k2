@@ -3,6 +3,7 @@ package control;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -98,19 +99,24 @@ public class Login extends HttpServlet {
 		response.sendRedirect(request.getContextPath() + redirectedPage);
 	}
 		
-	private String checkPsw(String psw) {
-		MessageDigest md = null;
-		try {
-			md = MessageDigest.getInstance("MD5");
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		byte[] messageDigest = md.digest(psw.getBytes());
-		BigInteger number = new BigInteger(1, messageDigest);
-		String hashtext = number.toString(16);
-		
-		return hashtext;
+	static String checkPsw(String psw) {
+	    MessageDigest md = null;
+	    try {
+	        md = MessageDigest.getInstance("SHA-256");
+	    } catch (NoSuchAlgorithmException e) {
+	        e.printStackTrace();
+	        return null; // Gestione appropriata dell'eccezione
+	    }
+	    byte[] messageDigest = md.digest(psw.getBytes());
+	    BigInteger number = new BigInteger(1, messageDigest);
+	    StringBuilder hashtext = new StringBuilder(number.toString(16));
+	    
+	    // Pad con zeri iniziali per ottenere una stringa di 64 caratteri
+	    while (hashtext.length() < 64) {
+	        hashtext.insert(0, '0');
+	    }
+	    
+	    return hashtext.toString();
 	}
 
 }
